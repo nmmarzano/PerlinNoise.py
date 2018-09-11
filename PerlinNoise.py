@@ -6,17 +6,20 @@ import math
 SCREEN_WIDTH, SCREEN_HEIGHT = 400, 400
 MAX_AMPLITUDE = 255/2
 
-def addToScreen(screen, grid):
-    for i, column in enumerate(grid):
-        for j, value in enumerate(column):
-            square = pygame.Surface((SCREEN_WIDTH/len(grid), SCREEN_HEIGHT/len(grid)))
+def addToScreen(screen, frequency, amplitude):
+    for i in range(frequency):
+        for j in range(frequency):
+            #square = pygame.Surface((SCREEN_WIDTH/frequency, SCREEN_HEIGHT/frequency))
+            value = math.ceil(random.randint(0,math.ceil(amplitude*2))-amplitude)
+            posRect = pygame.Rect(i*(SCREEN_WIDTH/frequency), j*(SCREEN_HEIGHT/frequency), SCREEN_WIDTH/frequency, SCREEN_HEIGHT/frequency)
             if value >= 0:
-                square.fill((value, value, value))
-                screen.blit(square, (i*(SCREEN_WIDTH/len(grid)), j*(SCREEN_HEIGHT/len(grid))), special_flags=pygame.BLEND_ADD)
+                #square.fill((value, value, value))
+                #screen.blit(square, (i*(SCREEN_WIDTH/frequency), j*(SCREEN_HEIGHT/frequency)), special_flags=pygame.BLEND_ADD)
+                screen.fill((value, value, value), rect=posRect, special_flags=pygame.BLEND_ADD)
             else:
-                square.fill((-value, -value, -value))
-                screen.blit(square, (i*(SCREEN_WIDTH/len(grid)), j*(SCREEN_HEIGHT/len(grid))), special_flags=pygame.BLEND_SUB)
-            #pygame.draw.rect(screen, (value, value, value), [i*(SCREEN_WIDTH/len(grid)), j*(SCREEN_HEIGHT/len(grid)), (i+1)*(SCREEN_WIDTH/len(grid)), (j+1)*(SCREEN_HEIGHT/len(grid))], 0)
+                #square.fill((-value, -value, -value))
+                #screen.blit(square, (i*(SCREEN_WIDTH/frequency), j*(SCREEN_HEIGHT/frequency)), special_flags=pygame.BLEND_SUB)
+                screen.fill((-value, -value, -value), rect=posRect, special_flags=pygame.BLEND_SUB)
 
 
 def waitForInput():
@@ -27,10 +30,6 @@ def waitForInput():
                 done = True
 
 
-def randomGrid(frequency, amplitude):
-    return [[math.ceil(random.randint(0,math.ceil(amplitude*2))-amplitude) for y in range(frequency)] for x in range(frequency)]
-
-
 def main():
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     pygame.init()
@@ -38,9 +37,12 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
     screen.fill((127, 127, 127))
-    for i in range(8):
-        grid = randomGrid(2**(i+1), MAX_AMPLITUDE/(2**i)) # huge grids for big ranges, extremely inefficient, hangs on too many iterations
-        addToScreen(screen, grid)
+    i = 0
+    while 2**(i+1)<SCREEN_WIDTH: # so we don't go below the actual screen resolution
+        print("Iteration {0}...".format(i))
+        addToScreen(screen, 2**(i+1), MAX_AMPLITUDE/(1.4**i))
+        print("Done.")
+        i+=1
 
     #displays screen
     pygame.display.flip()
