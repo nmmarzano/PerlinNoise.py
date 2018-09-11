@@ -40,12 +40,11 @@ def main():
     i = 0
     while 2**(i+1)<SCREEN_WIDTH: # so we don't go below the actual screen resolution
         print("Iteration {0}...".format(i))
-        addToScreen(screen, 2**(i+1), MAX_AMPLITUDE/(1.4**i))
+        addToScreen(screen, 2**(i+1), MAX_AMPLITUDE/(1.3**i))
+        #displays screen
+        pygame.display.flip()
         print("Done.")
         i+=1
-
-    #displays screen
-    pygame.display.flip()
     
     waitForInput()
     pygame.quit()
