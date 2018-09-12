@@ -52,36 +52,40 @@ def cosineInterpolation(a, b, x):
     return a*(1-f) + b*f
 
 
+def makeNoise(x, y, wOffset, hOffset, randomizer, interpolator):
+    prevX = math.floor(x/wOffset)
+    nextX = (math.floor(x/wOffset)+1)
+    prevY = math.floor(y/hOffset)
+    nextY = (math.floor(y/hOffset)+1)
+    fractionX = (x%wOffset)/wOffset
+    fractionY = (y%hOffset)/hOffset
+
+    v1 = randomizer(prevX,prevY,frequency)*amplitude
+    v2 = randomizer(nextX,prevY,frequency)*amplitude
+    v3 = randomizer(prevX,nextY,frequency)*amplitude
+    v4 = randomizer(nextX,nextY,frequency)*amplitude
+
+    i1 = interpolator(v1, v2, fractionX)
+    i2 = interpolator(v3, v4, fractionX)
+    
+    return interpolator(i1, i2, fractionY)
+
+
 def pixelArrayAndInterpolateDraw(screen, frequency, amplitude, randomizer, interpolator):
-    hOffset = math.floor(SCREEN_HEIGHT/frequency)
     wOffset = math.floor(SCREEN_WIDTH/frequency)
+    hOffset = math.floor(SCREEN_HEIGHT/frequency)
     screenArray = pygame.surfarray.pixels3d(screen)
     for x in range(SCREEN_WIDTH):
         for y in range(SCREEN_HEIGHT):
-            prevX = math.floor(x/wOffset)
-            nextX = (math.floor(x/wOffset)+1)
-            prevY = math.floor(y/hOffset)
-            nextY = (math.floor(y/hOffset)+1)
-            fractionX = (x%wOffset)/wOffset
-            fractionY = (y%hOffset)/hOffset
-
-            v1 = randomizer(prevX,prevY,frequency)*amplitude
-            v2 = randomizer(nextX,prevY,frequency)*amplitude
-            v3 = randomizer(prevX,nextY,frequency)*amplitude
-            v4 = randomizer(nextX,nextY,frequency)*amplitude
-
-            i1 = interpolator(v1, v2, fractionX)
-            i2 = interpolator(v3, v4, fractionX)
-
-            value = interpolator(i1, i2, fractionY)
+            value = makeNoise(x, y, wOffset, hOffset, randomizer, interpolator)
             
             (aux, aux, aux) = screenArray[x][y]
             if aux+value < 0:
-                screenArray[x][y] = (0,0,0)
+                screenArray[x,y] = (0,0,0)
             elif aux+value > 255:
-                screenArray[x][y] = (255,255,255)
+                screenArray[x,y] = (255,255,255)
             else:
-                screenArray[x][y] = (aux+value, aux+value, aux+value)
+                screenArray[x,y] = (aux+value, aux+value, aux+value)
 
 
 def pixelArrayAndInterpolateImg(screen, frequency, amplitude, randomizer, interpolator):
@@ -89,22 +93,7 @@ def pixelArrayAndInterpolateImg(screen, frequency, amplitude, randomizer, interp
     wOffset = math.floor(SCREEN_WIDTH/frequency)
     for x in range(SCREEN_WIDTH):
         for y in range(SCREEN_HEIGHT):
-            prevX = math.floor(x/wOffset)
-            nextX = (math.floor(x/wOffset)+1)
-            prevY = math.floor(y/hOffset)
-            nextY = (math.floor(y/hOffset)+1)
-            fractionX = (x%wOffset)/wOffset
-            fractionY = (y%hOffset)/hOffset
-
-            v1 = randomizer(prevX,prevY,frequency)*amplitude
-            v2 = randomizer(nextX,prevY,frequency)*amplitude
-            v3 = randomizer(prevX,nextY,frequency)*amplitude
-            v4 = randomizer(nextX,nextY,frequency)*amplitude
-
-            i1 = interpolator(v1, v2, fractionX)
-            i2 = interpolator(v3, v4, fractionX)
-
-            value = interpolator(i1, i2, fractionY)
+            value = makeNoise(x, y, wOffset, hOffset, randomizer, interpolator)
             
             [aux, aux, aux] = screen[x,y]
             if aux+value < 0:
@@ -145,7 +134,7 @@ def perlinNoise():
 
 def imgPerlinNoise():
     # Create a 1024x1024x3 array of 8 bit unsigned integers
-    screen = numpy.full( (SCREEN_WIDTH,SCREEN_HEIGHT,3), 127,dtype=numpy.uint8 )
+    screen = numpy.full( (SCREEN_WIDTH,SCREEN_HEIGHT,3), 127,dtype=numpy.uint8 ) # change data type!!
 
     i=0
     while frequencyFor(i) < SCREEN_WIDTH:
@@ -156,6 +145,7 @@ def imgPerlinNoise():
 
     img = Image.fromarray(screen, mode='RGB')       # Create a PIL image
     img.save('perlinnoise.png')                      # View in default viewer
+    print("All done!")
 
 
 def main():
