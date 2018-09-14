@@ -12,20 +12,21 @@ MASTER_SEED = random.uniform(0, 1);
 
 # --- PRNG ---
 
-# no post-processing, takes an optional 'extra' value to get a different set of random values for the same (X,Y), used for successive iterations
-def deterministicRandom(x, y, extra=0):
-    random.seed(x+extra+MASTER_SEED)
-    random.seed(y*random.uniform(1,2)+extra+MASTER_SEED)
+# no post-processing, takes an optional Z value to get a different set of random values for the same (X,Y), used for successive iterations
+def deterministicRandom(x, y, z=0):
+    random.seed(z+MASTER_SEED)
+    random.seed(x*random.uniform(1,2)+MASTER_SEED)
+    random.seed(y*random.uniform(1,2)+MASTER_SEED)
     result = random.uniform(-1, 1)
     return result
 
 
 # smooths deterministicRandom(...) values, takes way too long and results are extremely bland so not recommended unless smooth noise is required
-def smoothDeterministicRandom(x, y, extra):
-    corners = deterministicRandom(x-1,y-1,extra) + deterministicRandom(x+1,y-1,extra) + deterministicRandom(x-1,y+1,extra) + deterministicRandom(x+1,y+1,extra)
-    sides = deterministicRandom(x-1,y,extra) + deterministicRandom(x,y-1,extra) + deterministicRandom(x+1,y,extra) + deterministicRandom(x,y+1,extra)
+def smoothDeterministicRandom(x, y, z):
+    corners = deterministicRandom(x-1,y-1,z) + deterministicRandom(x+1,y-1,z) + deterministicRandom(x-1,y+1,z) + deterministicRandom(x+1,y+1,z)
+    sides = deterministicRandom(x-1,y,z) + deterministicRandom(x,y-1,z) + deterministicRandom(x+1,y,z) + deterministicRandom(x,y+1,z)
 
-    return corners/16 + sides/8 + deterministicRandom(x, y,extra)/4
+    return corners/16 + sides/8 + deterministicRandom(x, y, z)/4
 
 # ------------
 
