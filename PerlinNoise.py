@@ -157,13 +157,12 @@ def imgPerlinNoise(filename):
 
 
 def main():
-    os.environ["SDL_VIDEO_CENTERED"] = "1"
-    
     input = 0
     while not (input==1 or input==2):
         input = int(input("Enter 1 to visualize generation, 2 to save an image: "))
     
     if input==1:
+        os.environ["SDL_VIDEO_CENTERED"] = "1"
         pygame.init()
         perlinNoise()
         waitForInput()
