@@ -10,19 +10,40 @@ MAX_AMPLITUDE = 255*2/5
 MASTER_SEED = random.uniform(0, 1);
 
 
-def deterministicRandom(x, y, extra):
+# --- PRNG ---
+
+# no post-processing, takes an optional 'extra' value to get a different set of random values for the same (X,Y), used for successive iterations
+def deterministicRandom(x, y, extra=0):
     random.seed(x+extra+MASTER_SEED)
     random.seed(y*random.uniform(1,2)+extra+MASTER_SEED)
     result = random.uniform(-1, 1)
     return result
 
 
-# takes way too long and results are extremely bland, not recommended unless smoother noise is needed
+# smooths deterministicRandom(...) values, takes way too long and results are extremely bland so not recommended unless smooth noise is required
 def smoothDeterministicRandom(x, y, extra):
     corners = deterministicRandom(x-1,y-1,extra) + deterministicRandom(x+1,y-1,extra) + deterministicRandom(x-1,y+1,extra) + deterministicRandom(x+1,y+1,extra)
     sides = deterministicRandom(x-1,y,extra) + deterministicRandom(x,y-1,extra) + deterministicRandom(x+1,y,extra) + deterministicRandom(x,y+1,extra)
 
     return corners/16 + sides/8 + deterministicRandom(x, y,extra)/4
+
+# ------------
+
+                
+# --- INTERPOLATORS ---
+
+# quickest but kinda harsh, not extremely bad though
+def lerp(a, b, x):
+    return a*(1-x) + b*x
+
+
+# good smoothness and not too slow
+def cosineInterpolation(a, b, x):
+    ft = x*math.pi
+    f = (1 - math.cos(ft))*0.5
+    return a*(1-f) + b*f
+
+# ---------------------
 
 
 def getBlendModeFor(value):
@@ -38,18 +59,6 @@ def waitForInput():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-
-
-# quickest but kinda harsh, not extremely bad though
-def lerp(a, b, x):
-    return a*(1-x) + b*x
-
-
-# good smoothness and not too slow
-def cosineInterpolation(a, b, x):
-    ft = x*math.pi
-    f = (1 - math.cos(ft))*0.5
-    return a*(1-f) + b*f
 
 
 def makeNoise(x, y, wOffset, hOffset, randomizer, interpolator):
@@ -116,10 +125,9 @@ def amplitudeFor(i):
 
 def perlinNoise():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
     screen.fill((127, 127, 127))
+    
     i = 0
-
     # so we don't go below the actual screen resolution
     while frequencyFor(i) < SCREEN_WIDTH:
         print("Iteration {0}...".format(i))
@@ -132,9 +140,9 @@ def perlinNoise():
     print("All done!")
 
 
-def imgPerlinNoise():
+def imgPerlinNoise(filename):
     # Create a 1024x1024x3 array of 8 bit unsigned integers
-    screen = numpy.full( (SCREEN_WIDTH,SCREEN_HEIGHT,3), 127,dtype=numpy.uint8 ) # change data type!!
+    screen = numpy.full( (SCREEN_WIDTH,SCREEN_HEIGHT,3), 127,dtype=numpy.uint8 ) # TODO: change data type!!
 
     i=0
     while frequencyFor(i) < SCREEN_WIDTH:
@@ -144,17 +152,25 @@ def imgPerlinNoise():
         i+=1
 
     img = Image.fromarray(screen, mode='RGB')       # Create a PIL image
-    img.save('perlinnoise.png')                      # View in default viewer
+    img.save("{0}.png".format(filename))                      # save to same directory
     print("All done!")
 
 
 def main():
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     
-    pygame.init()
-    perlinNoise()
-    waitForInput()
-    pygame.quit()
+    input = 0
+    while not (input==1 or input==2):
+        input = int(input("Enter 1 to visualize generation, 2 to save an image: "))
+    
+    if input==1:
+        pygame.init()
+        perlinNoise()
+        waitForInput()
+        pygame.quit()
+    elsif input==2:
+        filename = input("Enter the desired filename (no extension): ");
+        imgPerlinNoise(filename)
 
 
 if __name__ == "__main__":
