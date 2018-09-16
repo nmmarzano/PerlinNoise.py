@@ -5,7 +5,7 @@ import math
 import numpy
 from PIL import Image
 
-SCREEN_WIDTH, SCREEN_HEIGHT = 512, 512
+SCREEN_WIDTH, SCREEN_HEIGHT = 256, 256
 MAX_AMPLITUDE = 255*2/5
 MASTER_SEED = random.uniform(0, 1);
 
@@ -62,7 +62,7 @@ def waitForInput():
                 done = True
 
 
-def makeNoise(x, y, wOffset, hOffset, randomizer, interpolator):
+def makeNoise(x, y, z, wOffset, hOffset, randomizer, interpolator):
     prevX = math.floor(x/wOffset)
     nextX = (math.floor(x/wOffset)+1)
     prevY = math.floor(y/hOffset)
@@ -70,10 +70,10 @@ def makeNoise(x, y, wOffset, hOffset, randomizer, interpolator):
     fractionX = (x%wOffset)/wOffset
     fractionY = (y%hOffset)/hOffset
 
-    v1 = randomizer(prevX,prevY,frequency)*amplitude
-    v2 = randomizer(nextX,prevY,frequency)*amplitude
-    v3 = randomizer(prevX,nextY,frequency)*amplitude
-    v4 = randomizer(nextX,nextY,frequency)*amplitude
+    v1 = randomizer(prevX,prevY,z)
+    v2 = randomizer(nextX,prevY,z)
+    v3 = randomizer(prevX,nextY,z)
+    v4 = randomizer(nextX,nextY,z)
 
     i1 = interpolator(v1, v2, fractionX)
     i2 = interpolator(v3, v4, fractionX)
@@ -87,7 +87,7 @@ def pixelArrayAndInterpolateDraw(screen, frequency, amplitude, randomizer, inter
     screenArray = pygame.surfarray.pixels3d(screen)
     for x in range(SCREEN_WIDTH):
         for y in range(SCREEN_HEIGHT):
-            value = makeNoise(x, y, wOffset, hOffset, randomizer, interpolator)
+            value = makeNoise(x, y, frequency, wOffset, hOffset, randomizer, interpolator)*amplitude
             
             (aux, aux, aux) = screenArray[x][y]
             if aux+value < 0:
@@ -103,7 +103,7 @@ def pixelArrayAndInterpolateImg(screen, frequency, amplitude, randomizer, interp
     wOffset = math.floor(SCREEN_WIDTH/frequency)
     for x in range(SCREEN_WIDTH):
         for y in range(SCREEN_HEIGHT):
-            value = makeNoise(x, y, wOffset, hOffset, randomizer, interpolator)
+            value = makeNoise(x, y, frequency, wOffset, hOffset, randomizer, interpolator)*amplitude
             
             [aux, aux, aux] = screen[x,y]
             if aux+value < 0:
@@ -127,6 +127,7 @@ def amplitudeFor(i):
 def perlinNoise():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.fill((127, 127, 127))
+    os.system('call sendkeys.bat "pygame window" ""')
     
     i = 0
     # so we don't go below the actual screen resolution
@@ -158,17 +159,17 @@ def imgPerlinNoise(filename):
 
 
 def main():
-    input = 0
-    while not (input==1 or input==2):
-        input = int(input("Enter 1 to visualize generation, 2 to save an image: "))
+    choice = 0
+    while not (choice==1 or choice==2):
+        choice = int(input("Enter 1 to visualize generation, 2 to save an image: "))
     
-    if input==1:
+    if choice==1:
         os.environ["SDL_VIDEO_CENTERED"] = "1"
         pygame.init()
         perlinNoise()
         waitForInput()
         pygame.quit()
-    elsif input==2:
+    elif choice==2:
         filename = input("Enter the desired filename (no extension): ");
         imgPerlinNoise(filename)
 
