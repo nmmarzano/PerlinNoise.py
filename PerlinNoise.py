@@ -22,7 +22,7 @@ def deterministicRandom(x, y, z=0):
 
 
 # smooths deterministicRandom(...) values, takes way too long and results are extremely bland so not recommended unless smooth noise is required
-def smoothDeterministicRandom(x, y, z):
+def smoothDeterministicRandom(x, y, z=0):
     corners = deterministicRandom(x-1,y-1,z) + deterministicRandom(x+1,y-1,z) + deterministicRandom(x-1,y+1,z) + deterministicRandom(x+1,y+1,z)
     sides = deterministicRandom(x-1,y,z) + deterministicRandom(x,y-1,z) + deterministicRandom(x+1,y,z) + deterministicRandom(x,y+1,z)
 
