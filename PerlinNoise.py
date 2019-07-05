@@ -124,7 +124,7 @@ def amplitudeFor(i):
     return MAX_AMPLITUDE/(1.5**i)
 
 
-def perlinNoise():
+def perlinNoise(prng, interpolator):
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.fill((127, 127, 127))
     os.system('call sendkeys.bat "pygame window" ""')
@@ -133,7 +133,7 @@ def perlinNoise():
     # so we don't go below the actual screen resolution
     while frequencyFor(i) < SCREEN_WIDTH:
         print("Iteration {0}...".format(i))
-        pixelArrayAndInterpolateDraw(screen, frequencyFor(i), amplitudeFor(i), deterministicRandom, cosineInterpolation)
+        pixelArrayAndInterpolateDraw(screen, frequencyFor(i), amplitudeFor(i), prng, interpolator)
         # displays screen
         pygame.display.flip()
         print("Done.")
@@ -142,19 +142,19 @@ def perlinNoise():
     print("All done!")
 
 
-def imgPerlinNoise(filename):
+def imgPerlinNoise(filename, prng, interpolator):
     # Create a 1024x1024x3 array of 8 bit unsigned integers
     screen = numpy.full( (SCREEN_WIDTH,SCREEN_HEIGHT,3), 127,dtype=numpy.uint8 ) # TODO: change data type!!
 
     i=0
     while frequencyFor(i) < SCREEN_WIDTH:
         print("Iteration {0}...".format(i))
-        screen = pixelArrayAndInterpolateImg(screen, frequencyFor(i), amplitudeFor(i), deterministicRandom, cosineInterpolation)
+        screen = pixelArrayAndInterpolateImg(screen, frequencyFor(i), amplitudeFor(i), prng, interpolator)
         print("Done.")
         i+=1
 
-    img = Image.fromarray(screen, mode='RGB')       # Create a PIL image
-    img.save("{0}.png".format(filename))                      # save to same directory
+    img = Image.fromarray(screen, mode='RGB')   # Create a PIL image
+    img.save("{0}.png".format(filename))        # save to same directory
     print("All done!")
 
 
@@ -166,12 +166,12 @@ def main():
     if choice==1:
         os.environ["SDL_VIDEO_CENTERED"] = "1"
         pygame.init()
-        perlinNoise()
+        perlinNoise(deterministicRandom, cosineInterpolation)
         waitForInput()
         pygame.quit()
     elif choice==2:
         filename = input("Enter the desired filename (no extension): ");
-        imgPerlinNoise(filename)
+        imgPerlinNoise(filename, deterministicRandom, cosineInterpolation)
 
 
 if __name__ == "__main__":
