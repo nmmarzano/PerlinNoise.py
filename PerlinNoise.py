@@ -3,6 +3,7 @@ import os
 import random
 import math
 import numpy
+import multiprocessing
 from PIL import Image
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 256, 256
@@ -122,6 +123,14 @@ def frequencyFor(i):
 
 def amplitudeFor(i):
     return MAX_AMPLITUDE/(1.5**i)
+
+
+def getStartRow(thread_number)
+    return math.floor(SCREEN_WIDTH/os.cpu_count())*thread_number
+
+
+def getEndRow(thread_number)
+    return math.floor(SCREEN_WIDTH/os.cpu_count())*(thread_number+1)-1
 
 
 def perlinNoise(prng, interpolator):
