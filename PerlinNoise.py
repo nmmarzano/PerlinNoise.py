@@ -120,7 +120,7 @@ def amplitudeFor(i):
     return MAX_AMPLITUDE/(1.5**i)
 
 
-def perlinNoise(smooth):
+def perlinNoise(interpolator, smooth):
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.fill((127, 127, 127))
     os.system('call sendkeys.bat "pygame window" ""')
@@ -129,7 +129,7 @@ def perlinNoise(smooth):
     # so we don't go below the actual screen resolution
     while frequencyFor(i) < SCREEN_WIDTH:
         print("Iteration {0}...".format(i))
-        pixelArrayAndInterpolateDraw(screen, frequencyFor(i), amplitudeFor(i), cosineInterpolation, smooth)
+        pixelArrayAndInterpolateDraw(screen, frequencyFor(i), amplitudeFor(i), interpolator, smooth)
         # displays screen
         pygame.display.flip()
         print("Done.")
@@ -138,14 +138,14 @@ def perlinNoise(smooth):
     print("All done!")
 
 
-def imgPerlinNoise(filename, smooth):
+def imgPerlinNoise(filename, interpolator, smooth):
     # Create a 1024x1024x3 array of 8 bit unsigned integers
     screen = numpy.full( (SCREEN_WIDTH,SCREEN_HEIGHT,3), 127,dtype=numpy.uint8 ) # TODO: change data type!!
 
     i=0
     while frequencyFor(i) < SCREEN_WIDTH:
         print("Iteration {0}...".format(i))
-        screen = pixelArrayAndInterpolateImg(screen, frequencyFor(i), amplitudeFor(i), cosineInterpolation, smooth)
+        screen = pixelArrayAndInterpolateImg(screen, frequencyFor(i), amplitudeFor(i), interpolator, smooth)
         print("Done.")
         i+=1
 
@@ -173,12 +173,12 @@ def main():
     if choice1==1:
         os.environ["SDL_VIDEO_CENTERED"] = "1"
         pygame.init()
-        perlinNoise(smooth)
+        perlinNoise(cosineInterpolation, smooth)
         waitForInput()
         pygame.quit()
     elif choice1==2:
         filename = input("Enter the desired filename (no extension): ");
-        imgPerlinNoise(filename, smooth)
+        imgPerlinNoise(filename, cosineInterpolation, smooth)
 
 
 if __name__ == "__main__":
