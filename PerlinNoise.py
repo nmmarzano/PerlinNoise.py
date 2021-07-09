@@ -139,7 +139,7 @@ def img_perlin_noise(filename, interpolator, smooth, value_array):
         print("Done.")
         i+=1
 
-    img = Image.fromarray(screen, mode='RGB')       # Create a PIL image
+    img = Image.fromarray(value_array, mode='RGB')       # Create a PIL image
     img.save("{0}.png".format(filename))            # save to same directory
     print("All done!")
 
