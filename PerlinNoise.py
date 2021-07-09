@@ -3,6 +3,7 @@ import os
 import math
 import numpy
 from PIL import Image
+from multiprocessing import Pool
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 256, 256
 MAX_AMPLITUDE = 255 * 2/5
@@ -25,7 +26,7 @@ def cosine_interpolation(a, b, x):
 
 
 def rand_matrix(frequency):
-    return numpy.random.uniform(-1, 1, size = (frequency + 4, frequency + 4))
+    return numpy.random.uniform(-1, 1, size=(frequency + 4, frequency + 4))
 
 
 def smooth_value(x, y, matrix):
@@ -46,14 +47,6 @@ def smooth_value(x, y, matrix):
             + sides / 8
             + matrix[x][y] / 4
         )
-
-
-def wait_for_input():
-    done = False
-    while not done:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
 
 
 def make_noise(x, y, z, wOffset, hOffset, interpolator, matrix, smooth):
@@ -80,25 +73,34 @@ def make_noise(x, y, z, wOffset, hOffset, interpolator, matrix, smooth):
     i1 = interpolator(v1, v2, fractionX)
     i2 = interpolator(v3, v4, fractionX)
     return interpolator(i1, i2, fractionY)
-    
+
+
+def get_line(args):
+    [screen, frequency, amplitude, x, wOffset, hOffset, interpolator, matrix, smooth] = args
+    result = screen[x]
+    for y in range(SCREEN_HEIGHT):
+        value = make_noise(x, y, frequency, wOffset, hOffset, interpolator, matrix, smooth) * amplitude
+            
+        [aux, _, _] = screen[x, y]
+        value += aux
+        if value < 0:
+            value = 0
+        elif value > 255:
+            value = 255
+        result[y] = [value, value, value]
+        
+    return result
+
 
 def generate_noise_array(screen, frequency, amplitude, interpolator, smooth):
     hOffset = math.floor(SCREEN_HEIGHT / frequency)
     wOffset = math.floor(SCREEN_WIDTH / frequency)
     matrix = rand_matrix(frequency)
-    for x in range(SCREEN_WIDTH):
-        for y in range(SCREEN_HEIGHT):
-            value = make_noise(x, y, frequency, wOffset, hOffset, interpolator, matrix, smooth) * amplitude
-            
-            [aux, aux, aux] = screen[x, y]
-            if aux+value < 0:
-                screen[x, y] = [0, 0, 0]
-            elif aux+value > 255:
-                screen[x, y] = [255, 255, 255]
-            else:
-                screen[x, y] = [aux + value, aux + value, aux + value]
 
-    return screen
+    with Pool(4) as p:
+        screen = p.map(get_line, [[screen, frequency, amplitude, x, wOffset, hOffset, interpolator, matrix, smooth] for x in range(SCREEN_WIDTH)])
+    
+    return numpy.array(screen)
 
 
 def frequency_for(i):
@@ -139,9 +141,17 @@ def img_perlin_noise(filename, interpolator, smooth, value_array):
         print("Done.")
         i+=1
 
-    img = Image.fromarray(value_array, mode='RGB')       # Create a PIL image
+    img = Image.fromarray(value_array, mode = 'RGB')       # Create a PIL image
     img.save("{0}.png".format(filename))            # save to same directory
     print("All done!")
+
+
+def wait_for_input():
+    done = False
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                done = True
 
 
 def main():
